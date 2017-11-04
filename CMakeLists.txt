@@ -17,7 +17,7 @@ set ( LUA_INIT "LUA_INIT" CACHE STRING "Environment variable for initial script.
 
 option ( LUA_ANSI "Use only ansi features." OFF )
 option ( LUA_USE_RELATIVE_LOADLIB "Use modified loadlib.c with support for relative paths on posix systems." 
-  ON )
+  OFF )
 set ( LUA_IDSIZE 60 CACHE NUMBER "gives the maximum size for the description of the source." )
 set ( LUA_PROMPT "> " CACHE STRING "Is the default prompt used by stand-alone Lua." )
 set ( LUA_PROMPT2 ">> " CACHE STRING "Is the default continuation prompt used by stand-alone Lua." )
@@ -40,6 +40,7 @@ endif ( )
 set ( LUA_PATH_DEFAULT "./?.lua;${LUA_DIR}${LUA_LDIR}/?.lua;${LUA_DIR}${LUA_LDIR}/?/init.lua;./?/init.lua" )
 set ( LUA_CPATH_DEFAULT "./?${LUA_MODULE_SUFFIX};${LUA_DIR}${LUA_CDIR}/?${LUA_MODULE_SUFFIX};${LUA_DIR}${LUA_CDIR}/loadall${LUA_MODULE_SUFFIX}" )
 
+option ( LUA_USE_AFORMAT "'printf' handles 'aA' specifiers" ON )
 if ( WIN32 AND NOT CYGWIN )
   # Windows systems
   option ( LUA_WIN "Windows specific build." ON )
@@ -61,6 +62,9 @@ else ( )
   option ( LUA_USE_ISATTY "Use tty." ON )
   option ( LUA_USE_POPEN "Use popen." ON )
   option ( LUA_USE_ULONGJMP "Use ulongjmp" ON )
+  option ( LUA_USE_STRTODHEX "'strtod' handles hex formats" ON )
+  option ( LUA_USE_LONGLONG "support for long long" ON )
+  option ( LUA_USE_GMTIME_R "Use thread safe time conversion" ON )
 endif ( )
 
 ## SETUP
@@ -139,36 +143,38 @@ endif ( )
 # Create dynamic library
 add_library ( liblua SHARED ${SRC_LIB} ${LUA_DLL_RC} ${LUA_DEF} )
 target_link_libraries ( liblua ${LIBS} )
-set_target_properties ( liblua PROPERTIES OUTPUT_NAME lua CLEAN_DIRECT_OUTPUT 1 )
+set_target_properties ( liblua PROPERTIES OUTPUT_NAME luasb CLEAN_DIRECT_OUTPUT 1 )
 if ( LUA_BUILD_AS_DLL )
   set_target_properties ( liblua PROPERTIES COMPILE_DEFINITIONS LUA_BUILD_AS_DLL )
 endif ( )
+set_target_properties(liblua PROPERTIES VERSION 5.1.5.1 SOVERSION 0)
 
 # Create static library, this is needed to compile luac in the 5.1.x Lua series
-add_library ( liblua_static STATIC ${SRC_LIB} )
-target_link_libraries ( liblua_static ${LIBS} )
+#add_library ( liblua_static STATIC ${SRC_LIB} )
+#target_link_libraries ( liblua_static ${LIBS} )
 
-add_executable ( lua ${SRC_LUA} ${LUA_RC} )
-target_link_libraries ( lua liblua )
+#add_executable ( lua ${SRC_LUA} ${LUA_RC} )
+#target_link_libraries ( lua liblua )
 
 # On windows a variant of the lua interpreter without console output needs to be built
-if ( LUA_BUILD_WLUA )
-  add_executable ( wlua WIN32 src/wmain.c ${SRC_LUA} ${LUA_RC} )
-  target_link_libraries ( wlua liblua )
-  install_executable ( wlua )
-endif ( )
+#if ( LUA_BUILD_WLUA )
+#  add_executable ( wlua WIN32 src/wmain.c ${SRC_LUA} ${LUA_RC} )
+#  target_link_libraries ( wlua liblua )
+#  install_executable ( wlua )
+#endif ( )
 
-add_executable ( luac ${SRC_LUAC} ${LUAC_RC} )
-target_link_libraries ( luac liblua_static )
+#add_executable ( luac ${SRC_LUAC} ${LUAC_RC} )
+#target_link_libraries ( luac liblua_static )
 
-install_executable ( lua luac )
+#install_executable ( lua luac )
+#install_executable ( lua )
 install_library ( liblua )
-install_data ( README.md COPYRIGHT HISTORY )
-install_lua_module ( strict etc/strict.lua )
-install_header ( src/lua.h src/lualib.h src/lauxlib.h etc/lua.hpp ${CMAKE_CURRENT_BINARY_DIR}/luaconf.h )
-install_doc ( doc/ )
-install_foo ( etc/ )
-install_test ( test/ )
+#install_data ( README.md COPYRIGHT HISTORY )
+#install_lua_module ( strict etc/strict.lua )
+install_header ( src/lua.h src/lualib.h src/lauxlib.h etc/lua.hpp ${CMAKE_CURRENT_BINARY_DIR}/luaconf.h INTO luasandbox)
+#install_doc ( doc/ )
+#install_foo ( etc/ )
+#install_test ( test/ )
 
 ## TESTS
 set ( LUA lua )
